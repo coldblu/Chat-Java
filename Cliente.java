@@ -1,13 +1,26 @@
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JButton;
+import javax.swing.JTextArea;
 
-public class Cliente{
+public class Cliente extends JFrame implements ActionListener{
 
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String username;
+    //Variáveis GUI
+    public JPanel painel = new JPanel(), msg = new JPanel();
+    public JLabel lblHistorico = new JLabel("Historico de Mensagens"), lbMensagem = new JLabel("Mensagem");
+    public JButton btSend = new JButton("Enviar");
+    public JTextField tfMensagem  = new JTextField(20);
+    public JTextArea taHistorico = new JTextArea(10, 20);
+    public JScrollPane scroll = new JScrollPane(this.taHistorico);
 
     //Construtor
     public Cliente(Socket socket, String username){
@@ -15,26 +28,55 @@ public class Cliente{
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.username = username;
+            this.username = username; 
+            
+            tela();
+
         } catch (Exception e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
-    //Mandar mensagens
-    public void sendMessage(){
-        try {
-            bufferedWriter.write(username);
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
+    public void tela(){
+        
+        //Tela
+            this.painel.setLayout( new BoxLayout(painel, BoxLayout.Y_AXIS));
+	    	this.painel.setBackground(Color.LIGHT_GRAY);
 
-            Scanner scan = new Scanner(System.in);
-            while(socket.isConnected()){
-                String messageToSend = scan.nextLine();
-                bufferedWriter.write(username + ": " + messageToSend);
+            this.taHistorico.setEditable(false);
+            this.taHistorico.setBackground(new Color(240, 240, 240));
+            
+            this.btSend.addActionListener(this);
+            
+            this.msg.add(this.tfMensagem);
+            this.msg.add(this.btSend);
+
+            
+            this.painel.add(lblHistorico);
+            this.painel.add(scroll);
+            this.painel.add(lbMensagem);
+            this.painel.add(msg);
+
+            this.tfMensagem.setText("");
+            
+            this.setTitle("Dolphins Chat");
+            this.setContentPane(painel);
+            this.setLocationRelativeTo(null);
+            this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+            this.setResizable(false);
+            //this.pack();
+            this.setSize(600, 400);
+            this.setVisible(true);
+            
+			
+    }
+    //Mandar mensagens
+    public void sendMessage(String mesage){
+        try {
+                bufferedWriter.write(username + "diz -> " + mesage);
+                taHistorico.append(username + " diz -> " + tfMensagem.getText() + "\r\n");                
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
-            }
         } catch (Exception e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
@@ -49,7 +91,8 @@ public class Cliente{
                 while(socket.isConnected()){
                     try {
                         msgFromGroupChat = bufferedReader.readLine();
-                        System.out.println(msgFromGroupChat);
+                        taHistorico.append(msgFromGroupChat+"\n");
+                        //System.out.println(msgFromGroupChat);
                     } catch (Exception e) {
                         closeEverything(socket, bufferedReader, bufferedWriter);
                     }
@@ -58,6 +101,14 @@ public class Cliente{
         }).start();
     }
 
+    
+    public void actionPerformed(ActionEvent evento){
+                System.out.println("Botao pressionado");
+                String mensagem = tfMensagem.getText();
+                sendMessage(mensagem);
+                tfMensagem.setText("");
+  
+    }
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){
         try {
             if(bufferedReader != null){
@@ -76,12 +127,11 @@ public class Cliente{
 
     //Main
     public static void main(String args[]) throws IOException{
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Informe o nome de usuario: ");
-        String username = scan.nextLine();
+        Scanner ler = new Scanner(System.in);
+        System.out.print("Informe o nome de usuario: ");
+        String username = ler.nextLine();
         Socket socket = new Socket("localhost",12345);
         Cliente cliente = new Cliente(socket,username);
         cliente.listenForMessage();
-        cliente.sendMessage();
     }
 }

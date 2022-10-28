@@ -59,7 +59,7 @@ public class ClientHandler implements Runnable{
 
     public void removeClientHandler(){
         clientHandlers.remove(this);
-        broadcastMessage("SERVER: " + clientUsername + " saiu do chat!");
+        broadcastMessage("SERVER: " + clientUsername + " saiu do chat!\n");
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){

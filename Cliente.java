@@ -15,12 +15,12 @@ public class Cliente extends JFrame implements ActionListener{
     private BufferedWriter bufferedWriter;
     private String username;
     //Variáveis GUI
-    public JPanel painel = new JPanel(), msg = new JPanel();
-    public JLabel lblHistorico = new JLabel("Historico de Mensagens"), lbMensagem = new JLabel("Mensagem");
-    public JButton btSend = new JButton("Enviar");
-    public JTextField tfMensagem  = new JTextField(20);
-    public JTextArea taHistorico = new JTextArea(10, 20);
-    public JScrollPane scroll = new JScrollPane(this.taHistorico);
+    private JPanel painel = new JPanel(), msg = new JPanel();
+    private JLabel lblHistorico = new JLabel("Historico de Mensagens"), lbMensagem = new JLabel("Mensagem");
+    private JButton btSend = new JButton("Enviar");
+    private JTextField tfMensagem  = new JTextField(20);
+    private JTextArea taHistorico = new JTextArea(10, 20);
+    private JScrollPane scroll = new JScrollPane(this.taHistorico);
 
     //Construtor
     public Cliente(Socket socket, String username){
@@ -73,7 +73,7 @@ public class Cliente extends JFrame implements ActionListener{
     //Mandar mensagens
     public void sendMessage(String mesage){
         try {
-                bufferedWriter.write(username + "diz -> " + mesage);
+                bufferedWriter.write(username + " diz -> " + mesage);
                 taHistorico.append(username + " diz -> " + tfMensagem.getText() + "\r\n");                
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
@@ -87,7 +87,14 @@ public class Cliente extends JFrame implements ActionListener{
             @Override
             public void run(){
                 String msgFromGroupChat;
-
+                try {
+                    bufferedWriter.write(username);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                } catch (Exception e) {
+                    // TODO: handle exception
+                }
+                
                 while(socket.isConnected()){
                     try {
                         msgFromGroupChat = bufferedReader.readLine();
@@ -103,7 +110,7 @@ public class Cliente extends JFrame implements ActionListener{
 
     
     public void actionPerformed(ActionEvent evento){
-                System.out.println("Botao pressionado");
+                //System.out.println("Botao pressionado");
                 String mensagem = tfMensagem.getText();
                 sendMessage(mensagem);
                 tfMensagem.setText("");
